@@ -70,7 +70,34 @@ def initdb(server, db , ma):
             self.Ticket = Ticket
             self.Fare = Fare
             self.Cabin = Cabin
-            self.Embarked = Embarked        
+            self.Embarked = Embarked  
+
+    class TitanicPrediction(db.Model):
+        PassengerId = db.Column(db.Integer, primary_key=True)
+        Survived = db.Column(db.Integer)
+        Pclass = db.Column(db.Integer)
+        Name = db.Column(db.String)#, unique=True)
+        Sex = db.Column(db.String)
+        Age = db.Column(db.Float)
+        SibSp = db.Column(db.Integer)
+        Parch = db.Column(db.Integer)
+        Ticket = db.Column(db.String)
+        Fare = db.Column(db.Float)
+        Cabin = db.Column(db.String)
+        Embarked = db.Column(db.String)
+        
+        def __init__(self, PassengerId, Pclass, Name, Sex, Age, SibSp, Parch, Ticket, Fare, Cabin, Embarked):
+            self.PassengerId = PassengerId
+            self.Pclass = Pclass
+            self.Name = Name
+            self.Sex = Sex
+            self.Age = Age
+            self.SibSp = SibSp 
+            self.Parch = Parch
+            self.Ticket = Ticket
+            self.Fare = Fare
+            self.Cabin = Cabin
+            self.Embarked = Embarked               
 
     class PassengerSchema_train(ma.Schema):
         class Meta:
@@ -78,7 +105,11 @@ def initdb(server, db , ma):
 
     class PassengerSchema_test(ma.Schema):
         class Meta:
-            fields = ('PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked')        
+            fields = ('PassengerId', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked')
+
+    class PassengerSchema_prediction(ma.Schema):
+        class Meta:
+            fields = ('PassengerId', 'Survived','Pclass', 'Name', 'Sex', 'Age', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked')                        
          
     db.create_all()
     
@@ -122,13 +153,14 @@ def initdb(server, db , ma):
     def db_filling_test():
 
         jason = request.json
-
+        goodjob = 'goodjob'
+        
         for i in range(0,len(jason)):
                         
             if 'PassengerId' in jason[i]:          
                 PassengerId = jason[i]['PassengerId']
             else :                
-                print('PassengerId is missing')
+                goodjob = 'PassengerId is missing'
                 break 
 
             if 'Pclass' in jason[i]:          
@@ -242,13 +274,15 @@ def initdb(server, db , ma):
     @prediction_app.route('/predict',methods=['POST'])
     def predict():
 
-        jason = request.json
+        jason = request.json 
+        goodjob = 'goodjob'       
+        
         for i in range(0,len(jason)):
                         
             if 'PassengerId' in jason[i]:          
                 PassengerId = jason[i]['PassengerId']
             else :                
-                print('PassengerId is missing')
+                goodjob = 'PassengerId is missing'
                 break 
 
             if 'Pclass' in jason[i]:          
@@ -318,9 +352,13 @@ def initdb(server, db , ma):
 
         DATA_BASE_URI = 'sqlite:///' + os.path.dirname(os.path.realpath(__file__)) + '/db.sqlite'
         req_data= pd.read_sql_table(table_name = 'titanic_test', con = DATA_BASE_URI)
+        db.session.query(TitanicTest).delete()             
+        db.session.commit()
+        
         prediction = make_prediction(req_data).tolist()
+        if goodjob == 'goodjob':
+            goodjob = jsonify({'success':True,"prediction": prediction})
 
-        goodjob = jsonify({'success':True,"prediction": prediction})
         return goodjob
 
     @prediction_app.route('/health',methods=['GET'])

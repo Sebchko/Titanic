@@ -4,7 +4,6 @@ from flask import Blueprint, request, jsonify
 from ..predictor_API import make_prediction
 from .run_pipeline import read_train
 from flask_sqlalchemy import SQLAlchemy
-from sqlitestuffs import create_connection, delete_all_tasks
 import pandas as pd
 import sqlite3
 import os
@@ -47,7 +46,6 @@ def initdb(server, db , ma):
 
     class TitanicTest(db.Model):
         PassengerId = db.Column(db.Integer, primary_key=True)
-#        Survived = db.Column(db.Integer)
         Pclass = db.Column(db.Integer)
         Name = db.Column(db.String, unique=True)
         Sex = db.Column(db.String)
@@ -113,10 +111,6 @@ def initdb(server, db , ma):
          
     db.create_all()
     
-    @prediction_app.route('/hello/',methods=['GET'])
-    def hello_world():
-        return 'Hello, BeCode!'
-
 
     @prediction_app.route('/DB_filling', methods=['POST'])
     def db_filling():
